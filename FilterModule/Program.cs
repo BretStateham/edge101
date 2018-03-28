@@ -114,7 +114,6 @@ namespace FilterModule
 
       // Register callback to be called when a message is received by the module
       //await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PipeMessage, ioTHubModuleClient);
-
       // Register callback to be called when a message is received by the module
       // await ioTHubModuleClient.SetImputMessageHandlerAsync("input1", PipeMessage, iotHubModuleClient);
 
@@ -161,10 +160,11 @@ namespace FilterModule
     }
 
     static async Task<MessageResponse> FilterMessages(Message message, object userContext)
-{
-    var counterValue = Interlocked.Increment(ref counter);
+    {
+      var counterValue = Interlocked.Increment(ref counter);
 
-    try {
+      try
+      {
         DeviceClient deviceClient = (DeviceClient)userContext;
 
         var messageBytes = message.GetBytes();
@@ -176,40 +176,41 @@ namespace FilterModule
 
         if (messageBody != null && messageBody.machine.temperature > temperatureThreshold)
         {
-            Console.WriteLine($"Machine temperature {messageBody.machine.temperature} " +
-                $"exceeds threshold {temperatureThreshold}");
-            var filteredMessage = new Message(messageBytes);
-            foreach (KeyValuePair<string, string> prop in message.Properties)
-            {
-                filteredMessage.Properties.Add(prop.Key, prop.Value);
-            }
+          Console.WriteLine($"Machine temperature {messageBody.machine.temperature} " +
+              $"exceeds threshold {temperatureThreshold}");
+          var filteredMessage = new Message(messageBytes);
+          foreach (KeyValuePair<string, string> prop in message.Properties)
+          {
+            filteredMessage.Properties.Add(prop.Key, prop.Value);
+          }
 
-            filteredMessage.Properties.Add("MessageType", "Alert");
-            await deviceClient.SendEventAsync("output1", filteredMessage);
+          filteredMessage.Properties.Add("MessageType", "Alert");
+          await deviceClient.SendEventAsync("output1", filteredMessage);
         }
 
         // Indicate that the message treatment is completed
         return MessageResponse.Completed;
-    }
-    catch (AggregateException ex)
-    {
+      }
+      catch (AggregateException ex)
+      {
         foreach (Exception exception in ex.InnerExceptions)
         {
-            Console.WriteLine();
-            Console.WriteLine("Error in sample: {0}", exception);
+          Console.WriteLine();
+          Console.WriteLine("Error in sample: {0}", exception);
         }
         // Indicate that the message treatment is not completed
         var deviceClient = (DeviceClient)userContext;
         return MessageResponse.Abandoned;
-    }
-    catch (Exception ex)
-    {
+      }
+      catch (Exception ex)
+      {
         Console.WriteLine();
         Console.WriteLine("Error in sample: {0}", ex.Message);
         // Indicate that the message treatment is not completed
         DeviceClient deviceClient = (DeviceClient)userContext;
         return MessageResponse.Abandoned;
+      }
     }
-}
+
   }
 }

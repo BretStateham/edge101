@@ -126,6 +126,15 @@ These steps are taken generally, with some variation, from [Quickstart: Deploy y
     2018-03-26 22:19:06.065 +00:00 [INF] - Updated reported properties    
     ```
 
+1. Pay attention to the errors due to the fact that we haven't deployed any modules yet:
+
+    ```bash
+    2018-03-28 08:40:34.751 +00:00 [INF] - Edge agent connected to IoT Hub via AMQP.
+    2018-03-28 08:40:35.361 +00:00 [INF] - Deployment config in edge agent's desired properties is empty.
+    2018-03-28 08:40:35.374 +00:00 [ERR] - Error refreshing edge agent configuration from twin.
+    Microsoft.Azure.Devices.Edge.Agent.Core.ConfigSources.ConfigEmptyException: This device has an empty configuration for the edge agent. Please set a deployment manifest
+    ```
+
 ### Deploy the tempSensor module
 
 1. Open the [Portal](https://portal.azure.com), open the `edgeiothub` IoT Hub, click "**IoT Edge (preview)**", select the `edge101edge` device, and finally click "**Set Modules**" along the top. 
@@ -515,3 +524,266 @@ These steps are taken generally, with some variation, from [Develop and deploy a
     using Newtonsoft.Json;                // for JsonConvert    
     ```
 
+1. Add the `temperatureThreshold` property
+
+    ```c#
+    static int temperatureThreshold { get; set; } = 25;  
+    ```
+
+1. Add the `MessageBody`, `Machine`, and `Ambient` classes 
+
+    ```c#
+    class MessageBody
+    {
+        public Machine machine {get;set;}
+        public Ambient ambient {get; set;}
+        public string timeCreated {get; set;}
+    }
+    class Machine
+    {
+        public double temperature {get; set;}
+        public double pressure {get; set;}         
+    }
+    class Ambient
+    {
+        public double temperature {get; set;}
+        public int humidity {get; set;}         
+    }
+    ```
+
+1. Replace the last line of the `init` method
+
+    ```c#
+    await ioTHubModuleClient.SetImputMessageHandlerAsync("input1", PipeMessage, iotHubModuleClient);
+    ```
+
+    with
+
+    ```c#
+    // Register callback to be called when a message is received by the module
+    // await ioTHubModuleClient.SetImputMessageHandlerAsync("input1", PipeMessage, iotHubModuleClient);
+
+    // Read TemperatureThreshold from Module Twin Desired Properties
+    var moduleTwin = await ioTHubModuleClient.GetTwinAsync();
+    var moduleTwinCollection = moduleTwin.Properties.Desired;
+    if (moduleTwinCollection["TemperatureThreshold"] != null)
+    {
+        temperatureThreshold = moduleTwinCollection["TemperatureThreshold"];
+    }
+
+    // Attach callback for Twin desired properties updates
+    await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, null);
+
+    // Register callback to be called when a message is received by the module
+    await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", FilterMessages, ioTHubModuleClient);    
+    ```
+
+1. Add the code for the `onDesiredPropertiesUpdate` method that is invoked whenever the module twin is updated in the cloud:
+
+    ```c#
+    static Task onDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
+    {
+        try
+        {
+            Console.WriteLine("Desired property change:");
+            Console.WriteLine(JsonConvert.SerializeObject(desiredProperties));
+
+            if (desiredProperties["TemperatureThreshold"]!=null)
+                temperatureThreshold = desiredProperties["TemperatureThreshold"];
+
+        }
+        catch (AggregateException ex)
+        {
+            foreach (Exception exception in ex.InnerExceptions)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Error when receiving desired property: {0}", exception);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine();
+            Console.WriteLine("Error when receiving desired property: {0}", ex.Message);
+        }
+        return Task.CompletedTask;
+    }    
+    ```
+
+1. Finally DELETE the existing `PipeMessage` method (we don't call it any more after we replaced the last line of `init`), and replace it with the code for the `` method:
+
+    ```C#
+    static async Task<MessageResponse> FilterMessages(Message message, object userContext)
+    {
+        var counterValue = Interlocked.Increment(ref counter);
+
+        try {
+            DeviceClient deviceClient = (DeviceClient)userContext;
+
+            var messageBytes = message.GetBytes();
+            var messageString = Encoding.UTF8.GetString(messageBytes);
+            Console.WriteLine($"Received message {counterValue}: [{messageString}]");
+
+            // Get message body
+            var messageBody = JsonConvert.DeserializeObject<MessageBody>(messageString);
+
+            if (messageBody != null && messageBody.machine.temperature > temperatureThreshold)
+            {
+                Console.WriteLine($"Machine temperature {messageBody.machine.temperature} " +
+                    $"exceeds threshold {temperatureThreshold}");
+                var filteredMessage = new Message(messageBytes);
+                foreach (KeyValuePair<string, string> prop in message.Properties)
+                {
+                    filteredMessage.Properties.Add(prop.Key, prop.Value);
+                }
+
+                filteredMessage.Properties.Add("MessageType", "Alert");
+                await deviceClient.SendEventAsync("output1", filteredMessage);
+            }
+
+            // Indicate that the message treatment is completed
+            return MessageResponse.Completed;
+        }
+        catch (AggregateException ex)
+        {
+            foreach (Exception exception in ex.InnerExceptions)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Error in sample: {0}", exception);
+            }
+            // Indicate that the message treatment is not completed
+            var deviceClient = (DeviceClient)userContext;
+            return MessageResponse.Abandoned;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine();
+            Console.WriteLine("Error in sample: {0}", ex.Message);
+            // Indicate that the message treatment is not completed
+            DeviceClient deviceClient = (DeviceClient)userContext;
+            return MessageResponse.Abandoned;
+        }
+    }    
+    ```
+### Build the Module, Create the Docker Container and Publish it. 
+
+1. From a terminal window, login your docker client into to your Azure Container Registry:
+
+    ```bash
+    docker login -u edge101acr -p <PASSWORD> edge101acr.azurecr.io
+    ```
+
+1. In the FilterModule project in VS Code, review the `module.json` file.  This is used by the VS Code "**Build and Push IoT Edge Module Image**" task:
+
+    ```json
+    {
+        "$schema-version": "0.0.1",
+        "description": "",
+        "image": {
+            "repository": "edge101acr.azurecr.io/filtermodule",
+            "tag": {
+                "version": "0.0.1",
+                "platforms": {
+                    "amd64": "./Dockerfile", 
+                    "amd64.debug": "./Dockerfile.amd64.debug",
+                    "arm32v7": "./Dockerfile.arm32v7",
+                    "windows-amd64": "./Dockerfile"
+                }
+            }
+        },
+        "language": "csharp"
+    }
+    ```
+
+1. In the VS Code File "**Explorer**" tab, right click on the `module.json` file and select "**Build and Push IoT Edge Module Image**"
+
+1. Ensure it succeeds, and in the Terminal window output in VS Code, find the line similar to :
+
+    ```bash
+    Successfully tagged edge101acr.azurecr.io/filtermodule:0.0.1-amd64
+    ```
+    
+    and copy the tag for the newly pushed image for use later:
+
+    ```bash
+    edge101acr.azurecr.io/filtermodule:0.0.1-amd64
+    ```
+
+
+1. Provide the credentials to allow your iotedgectl utility to login to your Azure Container Registry:
+
+    ```bash
+    iotedgectl login --address edge101acr.azurecr.io --username edge101acr --password <PASSWORD>
+    ```
+
+1. Open the iot hub in the portal, got to "**IoT Edge (preview)**" and click on the iot edge device to open it. 
+
+1`. Click on the "**Set Modules**" button along the top. 
+
+  - "**Add IoT Edge Module**"
+    - "**Name**": `filterModule
+    - "**Image URI**": The tag you copied above, e.g.: `edge101acr.azurecr.io/filtermodule:0.0.1-amd64`
+    - "**Container create options**":
+
+        ```json
+        {}
+        ```
+
+    - "**Enable**": **Checked**
+    - "**Module desired properties**":
+
+        ```json
+        {
+            "properties.desired":{
+                "TemperatureThreshold":25
+            }
+        }        
+        ```
+
+    - "**Save**" 
+    - "**Next**"
+  - "**Specify Routes**"
+    
+    ```json
+    {
+        "routes":{
+            "sensorToFilter":"FROM /messages/modules/tempSensor/outputs/temperatureOutput INTO BrokeredEndpoint(\"/modules/filterModule/inputs/input1\")",
+            "filterToIoTHub":"FROM /messages/modules/filterModule/outputs/output1 INTO $upstream"
+        }
+    }    
+    ```
+
+    - "**Next**"
+  - Review the template
+  - "**Submit**"
+
+1. Get your iot hub `iothubowner` connection string
+
+    ```bash
+    az iot hub show-connection-string --name edge101hub
+    ```
+
+    With output similar to:
+
+    ```json
+    {
+    "connectionString": "HostName=edge101hub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=HdC+zgWk/9eidHlrMqWI1c7zaTWMDDQ1at0I0+LgKg0="
+    }
+    ```
+
+    Copy just the connection string:
+
+    ```text
+    HostName=edge101hub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=HdC+zgWk/9eidHlrMqWI1c7zaTWMDDQ1at0I0+LgKg0=
+    ```
+
+1. Monitor events using the above connection string with
+    
+    - iothub-explorer
+    - Device explorer
+    - VS Code Azure IoT extension
+
+    For example, with iothub-explorer:
+
+    ```bash
+    iothub-explorer monitor-events --login "HostName=edge101hub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=HdC+zgWk/9eidHlrMqWI1c7zaTWMDDQ1at0I0+LgKg0="
+    ```
