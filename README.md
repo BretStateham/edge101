@@ -2,22 +2,25 @@
 
 Getting Started with Azure IoT Edge v1. 
 
-## Demo Steps
-
-These steps are taken generally, with some variation, from [Quickstart: Deploy your first IoT Edge module from the Azure portal to a Windows device - preview](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart)
-
-### Ensure Pre-reqs:
+## Ensure Pre-reqs:
 
 1. You will need:
 
-  - Docker
-  - .NET Core 2.0
-  - Python 2.7
+  - [Visual Studio Code](https://code.visualstudio.com/)
+  - [Azure IoT Edge extension for Visual Studio Code.](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge)
+  - [C# for Visual Studio Code (powered by OmniSharp extension.](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp)
+  - [Docker](https://docs.docker.com/engine/installation/) on the same computer that has Visual Studio Code. The Community Edition (CE) is sufficient for this tutorial.
+  - [.NET Core 2.0 SDK](https://www.microsoft.com/net/core#windowscmd)
+  - Install [Python 2.7 on Windows](https://www.python.org/downloads/) and make sure you can use the pip command
   - The Azure IoT Edge Runtime Control script:
 
     ```bash
     pip install -U azure-iot-edge-runtime-ctl
     ```
+
+## Create Gateway with Simulated Device
+
+These steps are taken generally, with some variation, from [Quickstart: Deploy your first IoT Edge module from the Azure portal to a Windows device - preview](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart)
 
 ### Create the Azure IoT Hub
 
@@ -97,11 +100,11 @@ These steps are taken generally, with some variation, from [Quickstart: Deploy y
     2018-03-26 22:19:02.336 +00:00 [INF] - Version - 1.0.0-preview021.10543704 (c87b52c93b13f03bf34da8d9ae650d55368ccecb)
     2018-03-26 22:19:02.337 +00:00 [INF] -
             █████╗ ███████╗██╗   ██╗██████╗ ███████╗
-          ██╔══██╗╚══███╔╝██║   ██║██╔══██╗██╔════╝
-          ███████║  ███╔╝ ██║   ██║██████╔╝█████╗
-          ██╔══██║ ███╔╝  ██║   ██║██╔══██╗██╔══╝
-          ██║  ██║███████╗╚██████╔╝██║  ██║███████╗
-          ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+            ██╔══██╗╚══███╔╝██║   ██║██╔══██╗██╔════╝
+            ███████║  ███╔╝ ██║   ██║██████╔╝█████╗
+            ██╔══██║ ███╔╝  ██║   ██║██╔══██╗██╔══╝
+            ██║  ██║███████╗╚██████╔╝██║  ██║███████╗
+            ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
 
     ██╗ ██████╗ ████████╗    ███████╗██████╗  ██████╗ ███████╗
     ██║██╔═══██╗╚══██╔══╝    ██╔════╝██╔══██╗██╔════╝ ██╔════╝
@@ -116,9 +119,9 @@ These steps are taken generally, with some variation, from [Quickstart: Deploy y
     2018-03-26 22:19:05.377 +00:00 [INF] - Deployment config in edge agent's desired properties is empty.
     2018-03-26 22:19:05.391 +00:00 [ERR] - Error refreshing edge agent configuration from twin.
     Microsoft.Azure.Devices.Edge.Agent.Core.ConfigSources.ConfigEmptyException: This device has an empty configuration for the edge agent. Please set a deployment manifest.
-      at Microsoft.Azure.Devices.Edge.Agent.IoTHub.EdgeAgentConnection.UpdateDeploymentConfig() in /opt/vsts/work/1/s/edge-agent/src/Microsoft.Azure.Devices.Edge.Agent.IoTHub/E
+        at Microsoft.Azure.Devices.Edge.Agent.IoTHub.EdgeAgentConnection.UpdateDeploymentConfig() in /opt/vsts/work/1/s/edge-agent/src/Microsoft.Azure.Devices.Edge.Agent.IoTHub/E
     dgeAgentConnection.cs:line 171
-      at Microsoft.Azure.Devices.Edge.Agent.IoTHub.EdgeAgentConnection.<RefreshTwinAsync>d__20.MoveNext() in /opt/vsts/work/1/s/edge-agent/src/Microsoft.Azure.Devices.Edge.Agen
+        at Microsoft.Azure.Devices.Edge.Agent.IoTHub.EdgeAgentConnection.<RefreshTwinAsync>d__20.MoveNext() in /opt/vsts/work/1/s/edge-agent/src/Microsoft.Azure.Devices.Edge.Agen
     t.IoTHub/EdgeAgentConnection.cs:line 124
     2018-03-26 22:19:06.065 +00:00 [INF] - Updated reported properties    
     ```
@@ -141,9 +144,9 @@ These steps are taken generally, with some variation, from [Quickstart: Deploy y
 
     ```json
     {
-      "routes": {
+        "routes": {
         "route": "FROM /* INTO $upstream"
-      }
+        }
     }
     ```
 
@@ -216,17 +219,17 @@ These steps are taken generally, with some variation, from [Quickstart: Deploy y
     ```bash
     2018-03-27 11:46:45.523 +00:00 [INF] - Plan execution started for deployment 2
     2018-03-27 11:46:45.592 +00:00 [INF] - Executing command: "Command Group: (
-      [docker pull microsoft/azureiotedge-hub:1.0-preview]
-      [docker create --name edgeHub microsoft/azureiotedge-hub:1.0-preview]
-      [docker start edgeHub]
+        [docker pull microsoft/azureiotedge-hub:1.0-preview]
+        [docker create --name edgeHub microsoft/azureiotedge-hub:1.0-preview]
+        [docker start edgeHub]
     )"
     2018-03-27 11:46:45.601 +00:00 [INF] - Executing command: "docker pull microsoft/azureiotedge-hub:1.0-preview"
     2018-03-27 11:46:47.500 +00:00 [INF] - Executing command: "docker create --name edgeHub microsoft/azureiotedge-hub:1.0-preview"
     2018-03-27 11:46:47.631 +00:00 [INF] - Executing command: "docker start edgeHub"
     2018-03-27 11:46:48.799 +00:00 [INF] - Executing command: "Command Group: (
-      [docker pull microsoft/azureiotedge-simulated-temperature-sensor:1.0-preview]
-      [docker create --name tempSensor microsoft/azureiotedge-simulated-temperature-sensor:1.0-preview]
-      [docker start tempSensor]
+        [docker pull microsoft/azureiotedge-simulated-temperature-sensor:1.0-preview]
+        [docker create --name tempSensor microsoft/azureiotedge-simulated-temperature-sensor:1.0-preview]
+        [docker start tempSensor]
     )"
     2018-03-27 11:46:48.799 +00:00 [INF] - Executing command: "docker pull microsoft/azureiotedge-simulated-temperature-sensor:1.0-preview"
     2018-03-27 11:46:50.259 +00:00 [INF] - Executing command: "docker create --name tempSensor microsoft/azureiotedge-simulated-temperature-sensor:1.0-preview"
@@ -280,11 +283,11 @@ These steps are taken generally, with some variation, from [Quickstart: Deploy y
     2018-03-27 11:46:53.522 +00:00 [INF] - Version - 1.0.0-preview021.10543704 (c87b52c93b13f03bf34da8d9ae650d55368ccecb)
     2018-03-27 11:46:53.522 +00:00 [INF] -
             █████╗ ███████╗██╗   ██╗██████╗ ███████╗
-          ██╔══██╗╚══███╔╝██║   ██║██╔══██╗██╔════╝
-          ███████║  ███╔╝ ██║   ██║██████╔╝█████╗
-          ██╔══██║ ███╔╝  ██║   ██║██╔══██╗██╔══╝
-          ██║  ██║███████╗╚██████╔╝██║  ██║███████╗
-          ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+            ██╔══██╗╚══███╔╝██║   ██║██╔══██╗██╔════╝
+            ███████║  ███╔╝ ██║   ██║██████╔╝█████╗
+            ██╔══██║ ███╔╝  ██║   ██║██╔══██╗██╔══╝
+            ██║  ██║███████╗╚██████╔╝██║  ██║███████╗
+            ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
 
     ██╗ ██████╗ ████████╗    ███████╗██████╗  ██████╗ ███████╗
     ██║██╔═══██╗╚══██╔══╝    ██╔════╝██╔══██╗██╔════╝ ██╔════╝
@@ -351,15 +354,15 @@ These steps are taken generally, with some variation, from [Quickstart: Deploy y
 
     ```json
     {
-      "machine": {
+        "machine": {
         "temperature":21.035142293332676,
         "pressure":1.0040035524049884
-      },
-      "ambient": {
+        },
+        "ambient": {
         "temperature":21.066330931413141,
         "humidity":25
-      },
-      "timeCreated":"2018-03-27T11:47:02.108829Z"
+        },
+        "timeCreated":"2018-03-27T11:47:02.108829Z"
     }
     ```
 
@@ -373,7 +376,7 @@ These steps are taken generally, with some variation, from [Quickstart: Deploy y
 
     ```json
     {
-      "connectionString": "HostName=edge101hub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=U6PuHHPPJBl2OD4LcLqSkeoaBytYoH5vYz0molqOWAI="
+        "connectionString": "HostName=edge101hub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=U6PuHHPPJBl2OD4LcLqSkeoaBytYoH5vYz0molqOWAI="
     }    
     ```
 
@@ -390,3 +393,125 @@ These steps are taken generally, with some variation, from [Quickstart: Deploy y
 1. Switch to the "**Data**" tab, select the `edge101edge` device, then click "**Monitor**".  Soon you should start to see messages arriving:
 
     ![Device to Cloud Messages](images/device-explorer-device-to-cloud-messages.png)
+
+## Create Your Own Filter Module
+
+These steps are taken generally, with some variation, from [Develop and deploy a C# IoT Edge module to your simulated device - preview](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-csharp-module)
+
+### Create a container registry:
+
+1. From a terminal window, run:
+
+    ```bash
+    az acr create --name edge101acr --resource-group edge101group --location westus --sku Basic --admin-enable true
+    ```
+
+    The output should look something similar to:
+
+    ```json
+    {
+    "adminUserEnabled": true,
+    "creationDate": "2018-03-27T15:11:20.398216+00:00",
+    "id": "/subscriptions/ed2f73c5-c021-4b86-9afb-aa7998d16085/resourceGroups/edge101group/providers/Microsoft.ContainerRegistry/registries/edge101acr",
+    "location": "westus",
+    "loginServer": "edge101acr.azurecr.io",
+    "name": "edge101acr",
+    "provisioningState": "Succeeded",
+    "resourceGroup": "edge101group",
+    "sku": {
+        "name": "Basic",
+        "tier": "Basic"
+    },
+    "status": null,
+    "storageAccount": null,
+    "tags": {},
+    "type": "Microsoft.ContainerRegistry/registries"
+    }  
+    ```
+
+1. Next, retrieve the credentials for your Azure Container Registry:
+
+    ```bash
+    az acr credential show --name edge101acr
+    ```
+
+    With output similar to:
+
+    ```bash
+    {
+    "passwords": [
+        {
+        "name": "password",
+        "value": "QvYXZo2X0z91f301/vbVivj6Hitkmpbl"
+        },
+        {
+        "name": "password2",
+        "value": "w0LzdNZ80xw=pC9UUQgxNnz4xI53JpnF"
+        }
+    ],
+    "username": "edge101acr"
+    }
+    ```
+
+    Make Note of the key values:
+
+    - **Login Server**: `edge101acr.azurecr.io`
+    - **User Name**: `edge101acr`
+    - **Password**: `QvYXZo2X0z91f301/vbVivj6Hitkmpbl`
+
+## Create an IoT Edge module project
+
+1. Install / update the AzureIoTEdgeModule dot net core project template:
+
+    ```bash
+    dotnet new -i Microsoft.Azure.IoT.Edge.Module
+    ```
+
+    And verify the template shows up in the list of available templates:
+
+    ```text
+    Restoring packages for C:\Users\BretS\.templateengine\dotnetcli\v2.1.3\scratch\restore.csproj...
+    Installing Microsoft.Azure.IoT.Edge.Module 1.3.0.
+    Generating MSBuild file C:\Users\BretS\.templateengine\dotnetcli\v2.1.3\scratch\obj\restore.csproj.nuget.g.props.
+    Generating MSBuild file C:\Users\BretS\.templateengine\dotnetcli\v2.1.3\scratch\obj\restore.csproj.nuget.g.targets.
+    Restore completed in 1.42 sec for C:\Users\BretS\.templateengine\dotnetcli\v2.1.3\scratch\restore.csproj.
+
+
+    Templates              Short Name       Language      Tags
+    -------------------------------------------------------------------------
+    Console Application    console          [C#], F#, VB  Common/Console
+    Class library          classlib         [C#], F#, VB  Common/Library
+    Azure IoT Edge Module  aziotedgemodule  [C#], F#      Console
+    ...                    ...              ...                         
+    ```
+
+1. Create a new dotnet core AzureIoTEdgeModule project, passing in the name of the module as well as the name of the container repository where it will be published:
+
+    ```bash
+    dotnet new aziotedgemodule -n FilterModule -r edge101acr.azurecr.io/filtermodule
+    ```
+
+    You should see output similar to:
+
+    ```bash
+    Processing post-creation actions...
+    Running 'dotnet restore' on FilterModule...
+    Restoring packages for C:\edge101\FilterModule\FilterModule.csproj...
+    Generating MSBuild file C:\edge101\FilterModule\obj\FilterModule.csproj.nuget.g.props.
+    Generating MSBuild file C:\edge101\FilterModule\obj\FilterModule.csproj.nuget.g.targets.
+    Restore completed in 4.51 sec for C:\edge101\FilterModule\FilterModule.csproj.
+
+
+    Restore succeeded.    
+    ```
+
+1. Open the new FilterModule folder in VS Code, and open the `program.cs` file:
+
+1.  Add the following `using` clauses to the top of the file:
+
+    ```c#
+    using System.Collections.Generic;     // for KeyValuePair<>
+    using Microsoft.Azure.Devices.Shared; // for TwinCollection
+    using Newtonsoft.Json;                // for JsonConvert    
+    ```
+
