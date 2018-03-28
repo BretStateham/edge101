@@ -18,11 +18,20 @@ Getting Started with Azure IoT Edge v1.
     pip install -U azure-iot-edge-runtime-ctl
     ```
 
-## Create Gateway with Simulated Device
+## Demos
+
+- [Create an IoT Hub](#createiothub)
+- [Configure Azure IoT Edge](#configureedge")
+- [Simulated Temperature Module](#simulatedsensor)
+- [Custom C# Filter Module](#custommodule)
+
+---
+
+<a name="createiothub"></a>
+
+## DEMO: Create an IoT Hub
 
 These steps are taken generally, with some variation, from [Quickstart: Deploy your first IoT Edge module from the Azure portal to a Windows device - preview](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart)
-
-### Create the Azure IoT Hub
 
 1. Run 
 
@@ -36,7 +45,17 @@ These steps are taken generally, with some variation, from [Quickstart: Deploy y
     az iot hub create -n edge101hub -g edge101group --sku S1
     ```
 
-### Create the Azure IoT Edge Device ID
+---
+
+<a name="configureedge"></a>
+
+## Configure Azure IoT Edge
+
+1. Install the Azure IoT Runtime:
+
+    ```bash
+    pip install -U azure-iot-edge-runtime-ctl
+    ```
 
 1. Go to the [portal](https://portal.azure.com) and open the `edge101hub` you just created
 
@@ -49,8 +68,6 @@ These steps are taken generally, with some variation, from [Quickstart: Deploy y
     ```text
     HostName=edge101hub.azure-devices.net;DeviceId=edge101edge;SharedAccessKey=qFo1k8DqPTQ0SL/j3zIW/Ma89WFaY2QZBw+Q2TQXYYw=
     ```
-
-### Configure the IoT Edge instance
 
 1. Run the following, passing in the connection string for the edge device you created previously:
 
@@ -135,7 +152,11 @@ These steps are taken generally, with some variation, from [Quickstart: Deploy y
     Microsoft.Azure.Devices.Edge.Agent.Core.ConfigSources.ConfigEmptyException: This device has an empty configuration for the edge agent. Please set a deployment manifest
     ```
 
-### Deploy the tempSensor module
+---
+
+<a name="simulatedsensor"></a>
+
+## Simulated Temperature Module
 
 1. Open the [Portal](https://portal.azure.com), open the `edgeiothub` IoT Hub, click "**IoT Edge (preview)**", select the `edge101edge` device, and finally click "**Set Modules**" along the top. 
 
@@ -403,7 +424,11 @@ These steps are taken generally, with some variation, from [Quickstart: Deploy y
 
     ![Device to Cloud Messages](images/device-explorer-device-to-cloud-messages.png)
 
-## Create Your Own Filter Module
+---
+
+<a name="custommodule"></a>
+
+## Custom C# Filter Module
 
 These steps are taken generally, with some variation, from [Develop and deploy a C# IoT Edge module to your simulated device - preview](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-csharp-module)
 
