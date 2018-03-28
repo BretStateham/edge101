@@ -787,3 +787,49 @@ These steps are taken generally, with some variation, from [Develop and deploy a
     ```bash
     iothub-explorer monitor-events --login "HostName=edge101hub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=HdC+zgWk/9eidHlrMqWI1c7zaTWMDDQ1at0I0+LgKg0="
     ```
+
+## Clean up:
+
+1. "Uninstall" the iotedgectl setup...
+
+    ```bash
+    iotedgectl uninstall
+    ```
+
+1. List the docker images:
+
+    ```bash
+    docker images
+    ```
+
+    Should see output similar to the following:
+
+    ```bash
+    REPOSITORY                                            TAG                 IMAGE ID      ...
+    edge101prepacr.azurecr.io/filtermodule                0.0.1-amd64         70c803b2cb08  ...
+    ...                                                   ...                 ...           ...
+    microsoft/azureiotedge-simulated-temperature-sensor   1.0-preview         b328002ad951  ...
+    microsoft/azureiotedge-hub                            1.0-preview         2e4bdbb32004  ...
+    microsoft/azureiotedge-agent                          1.0-preview         c0c3ecafd764  ...
+    ...                                                   ...                 ...           ...
+    ```
+
+1. You can remove the images, although you may want to just remove the custom modules, leaving the ones from microsoft in place for faster installs next time.   To remove an image:
+
+    Using the repository:tag
+
+    ```bash
+    docker rmi edge101prepacr.azurecr.io/filtermodule:0.0.1-amd64
+    ```    
+
+    Using the image id (delete the `microsoft/azuireiotedge-hub` module with the id `2e4bdbb32004`)
+
+    ```bash
+    docker rmi 2e4bdbb32004
+    ```
+
+1. Finally, delete the Azure Resource Group:
+
+    ```bash
+    az group delete -g edge101group
+    ```
