@@ -387,12 +387,12 @@ These steps are taken generally, with some variation, from [Quickstart: Deploy y
     ```json
     {
         "machine": {
-        "temperature":21.035142293332676,
-        "pressure":1.0040035524049884
+            "temperature":21.035142293332676,
+            "pressure":1.0040035524049884
         },
         "ambient": {
-        "temperature":21.066330931413141,
-        "humidity":25
+            "temperature":21.066330931413141,
+            "humidity":25
         },
         "timeCreated":"2018-03-27T11:47:02.108829Z"
     }
